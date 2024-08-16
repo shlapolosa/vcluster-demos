@@ -2418,3 +2418,40 @@ spec:
       name: crossplane-contrib-function-auto-ready
     step: automatically-detect-ready-composed-resources
   writeConnectionSecretsToNamespace: crossplane-system
+---
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: cluster-civo
+  labels:
+    provider: provider-civo
+    cluster: ck-all
+spec:
+  compositeTypeRef:
+    apiVersion: devopstoolkitseries.com/v1alpha1
+    kind: CompositeCluster
+  resources:
+  - name: civo-k8s-cluster
+    base:
+      apiVersion: cluster.civo.crossplane.io/v1alpha1
+      kind: CivoKubernetes
+      spec:
+        name: "ck-all"
+        providerConfigRef:
+          name: provider-civo-config  # Change this to your correct ProviderConfig name
+        version: 1.28.7-k3s1
+        pools:
+          - count: 3
+        connectionDetails:
+          connectionSecretNamePrefix: civo-cluster
+          connectionSecretNamespace: crossplane-system
+    patches:
+    - fromFieldPath: "spec.id"
+      toFieldPath: "metadata.name"
+    - fromFieldPath: "spec.parameters.nodeSize"
+      toFieldPath: "spec.pools[0].size"
+    - fromFieldPath: "spec.parameters.minNodeCount"
+      toFieldPath: "spec.pools[0].count"
+  writeConnectionSecretsToNamespace: crossplane-system
+
+

@@ -4,7 +4,8 @@
     "kubectl@latest",
     "argocd@latest",
     "watch@latest",
-    "jq@latest"
+    "jq@latest",
+    "yq@latest"
   ],
   "shell": {
     "init_hook": [

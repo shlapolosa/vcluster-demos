@@ -11,5 +11,5 @@ spec:
       provider: provider-civo
       cluster: ck-all
   parameters:
-    nodeSize: medium
-    minNodeCount: 1
+    nodeSize: g4s.kube.small
+    minNodeCount: 3  

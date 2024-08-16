@@ -16,7 +16,67 @@ Once you have a running K8s cluster you can proceed to install the script below.
 
 Run the `install_script.sh` to install ArgoCD and Crossplane. It will also get Backstage ready. You'll need to create a few more configurations before running Backstage.
 
-## ArgoCD
+## Management Cluster
+
+cd istio_lessons/istio-terraform
+
+```
+terraform apply -target=local_file.kubeconfig -var="civo_token=$CIVO_TOKEN"
+```
+
+cd vcluster-demos/crossplane
+
+```
+civo kubernetes config management --save --switch
+
+helm upgrade --install crossplane crossplane-stable/crossplane --namespace crossplane-system --create-namespace --wait
+
+echo "apiVersion: v1\nkind: Secret\nmetadata:\n  name: civo-creds\ntype: Opaque\ndata:\n  credentials: $CIVO_TOKEN_ENCODED" | kubectl --namespace crossplane-system apply --filename -
+
+kubectl apply -f xrds.yaml
+kubectl apply -f providers/civo.yaml
+kubectl apply -f compositions.yaml
+kubectl apply -f provider-configs/provider-config-civo.yaml
+kubectl create ns infra 
+kubectl apply -f civo_claim.yaml
+```
+
+Note! At this point even if you workload cluster, it will get recreated by crossplane because its now being managed by kubernetes
+
+```
+kubectl delete -f civo_claim.yaml
+```
+
+### Access ArgoCD on the management cluster
+
+```
+kubectl create namespace argocd
+
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+helm repo add bitnami https://charts.bitnami.com/bitnami\nhelm repo add backstage https://backstage.github.io/charts
+
+kubectl create ns backstage
+
+kubectl get secret -n argocd argocd-initial-admin-secret -o json | jq -r '.data.password' | base64 --decode
+
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+
+kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+
+
+kubectl patch -n argocd configmap argocd-cm --type merge -p '{"data":{"accounts.admin":"apiKey"}}'
+
+
+argocd login 08a32d5e-2838-4ecc-bc29-ec78dbb7e16d.lb.civo.com --username admin --password JaltVFkhJTTJig63
+
+export ARGOCD_AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhcmdvY2QiLCJzdWIiOiJhZG1pbjphcGlLZXkiLCJuYmYiOjE3MjM4MTU2NjYsImlhdCI6MTcyMzgxNTY2NiwianRpIjoiYWI0NmEwNjYtZjEzMi00Mjg0LWE5YTYtNGQxOGQ2N2Q0MThlIn0._sAUaY9BuptdsW3QeyFb2Qi4ZyeqgPtvBL27sI8zxIk
+
+update action secrets in github
+
+
+
+```
 
 ### Access ArgoCD
 
