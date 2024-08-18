@@ -1,17 +1,19 @@
-apiVersion: backstage.io/v1alpha1
-kind: Component
+apiVersion: devopstoolkitseries.com/v1alpha1
+kind: ClusterClaim
 metadata:
   name: ${{ values.clusterName }}
-  description: A Civo Kubernetes cluster
-  tags:
-    - civo
-    - kubernetes
 spec:
-  type: service
-  lifecycle: experimental
-  owner: user:guest
-  dependsOn:
-    - apiVersion: argoproj.io/v1alpha1
-      kind: Application
-      name: ${{ values.clusterName }}
-      namespace: argocd
+  id: ${{ values.clusterName }}
+  compositionSelector:
+    matchLabels:
+      provider: civo
+      cluster: kubernetes
+  parameters:
+    nodeSize: ${{ values.nodeSize }}
+    minNodeCount: ${{ values.minNodeCount }}
+    version: "${{ values.version }}"
+    apps:
+      traefik:
+        enabled: true
+  writeConnectionSecretToRef:
+    name: ${{ values.clusterName }}

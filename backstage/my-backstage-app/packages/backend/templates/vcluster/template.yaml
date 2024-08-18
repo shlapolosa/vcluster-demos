@@ -70,7 +70,7 @@ spec:
       action: github:actions:dispatch
       input:
         workflowId: vcluster_deploy.yaml
-        repoUrl: 'github.com/shlapolosa/vcluster-demos'
+        repoUrl: 'github.com?owner=socrates-kubefirst&repo=vcluster-demos'
         branchOrTagName: 'master'
         workflowInputs:
           clusterName: ${{ parameters.clusterName }}
