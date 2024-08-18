@@ -1,5 +1,6 @@
 # devbox
 devbox.lock
+devbox.json
 # Logs
 logs
 *.log
