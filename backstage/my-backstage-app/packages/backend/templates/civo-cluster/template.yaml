@@ -78,7 +78,7 @@ spec:
           clusterName: ${{ parameters.clusterName }}
           repoURLforArgo: ${{ steps['publish'].output.remoteUrl }}
           nodeSize: ${{ parameters.nodeSize }}
-          minNodeCount: 1
+          minNodeCount: ${{ parameters.minNodeCount }}
           version: ${{ parameters.version }}
     - id: register
       name: Register
