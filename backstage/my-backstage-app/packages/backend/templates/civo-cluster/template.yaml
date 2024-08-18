@@ -87,7 +87,7 @@ spec:
           repoURLforArgo: ${{ steps['publish'].output.remoteUrl }}
           nodeSize: ${{ parameters.nodeSize }}
           minNodeCount: ${{ parameters.minNodeCount | string}}
-          version: ${{ parameters.version }}
+          version: ${{ parameters.version | string}}
           provider: 'civo'
     - id: register
       name: Register
