@@ -83,7 +83,7 @@ async function main() {
 
   const catalogEnv = useHotMemoize(module, () => {
     const env = createEnv('catalog');
-    const builder = new CatalogBuilder(env);
+    const builder = new CatalogBuilder({ ...env, config });
     builder.addProcessor(new ClusterClaimProcessor());
     return builder.build();
   });
