@@ -80,6 +80,7 @@ spec:
           nodeSize: ${{ parameters.nodeSize }}
           minNodeCount: ${{ parameters.minNodeCount }}
           version: ${{ parameters.version }}
+          provider: 'civo'
     - id: register
       name: Register
       action: catalog:register
