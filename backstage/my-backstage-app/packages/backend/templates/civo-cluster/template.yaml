@@ -64,9 +64,10 @@ spec:
         url: ./content
         values:
           clusterName: ${{ parameters.clusterName }}
-          nodeSize: ${{ parameters.nodeSize }}
-          minNodeCount: ${{ parameters.minNodeCount }}
-          version: ${{ parameters.version }}
+          nodeSize: "${{ parameters.nodeSize }}"
+          minNodeCount: ${{ parameters.minNodeCount | string }}
+          version: ${{ parameters.version | string  }}
+          provider: 'civo'
     - id: publish
       name: Publish
       action: publish:github
@@ -85,7 +86,7 @@ spec:
           clusterName: ${{ parameters.clusterName }}
           repoURLforArgo: ${{ steps['publish'].output.remoteUrl }}
           nodeSize: ${{ parameters.nodeSize }}
-          minNodeCount: ${{ parameters.minNodeCount }}
+          minNodeCount: ${{ parameters.minNodeCount | string}}
           version: ${{ parameters.version }}
           provider: 'civo'
     - id: register
