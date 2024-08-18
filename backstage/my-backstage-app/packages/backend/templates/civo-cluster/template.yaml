@@ -25,6 +25,7 @@ spec:
         - clusterName
         - nodeSize
         - minNodeCount
+        - version
       properties:
         clusterName:
           title: Cluster Name
@@ -43,7 +44,11 @@ spec:
           title: Minimum Node Count
           type: integer
           description: The minimum number of nodes in the cluster
-
+        version:
+          title: Kubernetes Version
+          type: string
+          description: The Version of the Created Cluster
+          
   steps:
     - id: fetch-base
       name: Fetch Base
@@ -54,6 +59,7 @@ spec:
           clusterName: ${{ parameters.clusterName }}
           nodeSize: ${{ parameters.nodeSize }}
           minNodeCount: ${{ parameters.minNodeCount }}
+          version: ${{ parameters.version }}
     - id: publish
       name: Publish
       action: publish:github
@@ -73,6 +79,7 @@ spec:
           repoURLforArgo: ${{ steps['publish'].output.remoteUrl }}
           nodeSize: ${{ parameters.nodeSize }}
           minNodeCount: ${{ parameters.minNodeCount }}
+          version: ${{ parameters.version }}
     - id: register
       name: Register
       action: catalog:register
