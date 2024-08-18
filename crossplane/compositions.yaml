@@ -2424,8 +2424,8 @@ kind: Composition
 metadata:
   name: cluster-civo
   labels:
-    provider: provider-civo
-    cluster: ck-all
+    provider: civo
+    cluster: kubernetes
 spec:
   compositeTypeRef:
     apiVersion: devopstoolkitseries.com/v1alpha1
