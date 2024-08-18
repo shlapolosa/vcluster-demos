@@ -45,6 +45,10 @@ jobs:
 
     - name: Delete GitHub Repository
       run: |
+        if [ "${{ github.event.inputs.provider }}" = "civo" ]; then
+          echo "Destroying Civo cluster"
+          # Add Civo-specific destruction commands here
+        fi
         echo "Deleting GitHub Repository $REPO"
         curl -X DELETE -H "Authorization: token ${{ secrets.MYGITHUB_TOKEN }}" \
         https://api.github.com/repos/$OWNER/$REPO

@@ -18,6 +18,9 @@ on:
       minNodeCount:
         description: 'The minimum number of nodes in the cluster'
         required: true
+      provider:
+        description: 'The cloud provider for the cluster (e.g., civo, eks, gke, aks)'
+        required: true
 
 jobs:
   deploy-cluster:
@@ -49,3 +52,7 @@ jobs:
             --sync-option CreateNamespace=true \
             --upsert \
             --grpc-web
+        if [ "${{ github.event.inputs.provider }}" = "civo" ]; then
+          echo "Deploying to Civo"
+          # Add Civo-specific deployment commands here
+        fi

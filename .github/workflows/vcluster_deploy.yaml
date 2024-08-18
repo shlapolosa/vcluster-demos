@@ -82,7 +82,8 @@ jobs:
           DEST_SERVER="${{ github.event.inputs.hostGKE_URLforArgo }}"
         elif [ "${{ github.event.inputs.hostClusterType }}" = "aks" ]; then
           DEST_SERVER="${{ github.event.inputs.hostAKS_URLforArgo }}"
-        else
+        elif [ "${{ github.event.inputs.hostClusterType }}" = "civo" ]; then
+          DEST_SERVER="https://api.civo.com"
           echo "Unsupported cluster type: ${{ github.event.inputs.hostClusterType }}"
           exit 1
         fi
