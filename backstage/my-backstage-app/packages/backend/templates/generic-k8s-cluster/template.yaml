@@ -20,6 +20,7 @@ spec:
           ui:options:
             allowedHosts:
               - github.com
+              - https://github.com/shlapolosa
     - title: Basic K8s Cluster Configuration
       required:
         - clusterName

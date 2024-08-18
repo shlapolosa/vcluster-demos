@@ -72,13 +72,49 @@ argocd login 08a32d5e-2838-4ecc-bc29-ec78dbb7e16d.lb.civo.com --username admin -
 
 export ARGOCD_AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhcmdvY2QiLCJzdWIiOiJhZG1pbjphcGlLZXkiLCJuYmYiOjE3MjM4MTU2NjYsImlhdCI6MTcyMzgxNTY2NiwianRpIjoiYWI0NmEwNjYtZjEzMi00Mjg0LWE5YTYtNGQxOGQ2N2Q0MThlIn0._sAUaY9BuptdsW3QeyFb2Qi4ZyeqgPtvBL27sI8zxIk
 
-update action secrets in github
+update action secrets in github and update secretes file in backstage folder
 
+```
+### Backstage
+
+```
+cd vcluster-demos/backstage/my-backstage-app
+
+yarn install --frozen-lockfile                                           
+yarn tsc
+yarn build:backend
+
+docker buildx build --platform linux/amd64,linux/arm64 -t socrates12345/backstage:1.0.2 --push -f packages/backend/Dockerfile .
+
+docker run -it -p 7007:7007 socrates12345/backstage:1.0.2
+```
+
+after updaing image tage in kubernetes/backstage-app/bs-deploy.yaml to 1.0.2 etc
+
+```
+
+kubectl apply -f ../../kubernetes/backstage-app
+
+kubectl get pods -n backstage
+
+kubectl describe pod backstage-app-654bc44b4c-ph56b -n backstage
+
+kubectl logs backstage-app-54cfcf68c4-z4trm -n backstage
+
+kubectl port-forward -n backstage service/backstage-app 80 
 
 
 ```
 
-### Access ArgoCD
+then log onto the deployed service on port http://localhost:80
+
+### Backstage changes
+
+firstly change eks-cluster-crossplane and create civo equivalant.
+
+will also have to change the vcluster template with similar
+
+
 
 #### Login to the UI
 To access ArgoCD, you will need the initial admin password. You can get it using the command below:

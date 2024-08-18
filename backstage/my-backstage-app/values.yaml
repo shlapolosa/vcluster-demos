@@ -126,28 +126,28 @@ backstage:
   extraContainers: []
 
   # -- Backstage container environment variables
-  extraEnvVars: 
-    - name: GOOGLE_APPLICATION_CREDENTIALS
-      value: "/etc/secrets/google-creds.json"
+  # extraEnvVars: 
+  #   - name: GOOGLE_APPLICATION_CREDENTIALS
+  #     value: "/etc/secrets/google-creds.json"
     
   # -- Backstage container environment variables from existing ConfigMaps
   extraEnvVarsCM: []
 
   # -- Backstage container environment variables from existing Secrets
-  extraEnvVarsSecrets:
-    - my-backstage-secrets
+  # extraEnvVarsSecrets:
+  #   - my-backstage-secrets
 
   # -- Backstage container additional volume mounts
-  extraVolumeMounts:
-    - name: google-creds-volume
-      mountPath: "/etc/secrets"
-      readOnly: true
+  # extraVolumeMounts:
+  #   - name: google-creds-volume
+  #     mountPath: "/etc/secrets"
+  #     readOnly: true
 
   # -- Backstage container additional volumes
-  extraVolumes:
-    - name: google-creds-volume
-      secret:
-        secretName: google-creds
+  # extraVolumes:
+  #   - name: google-creds-volume
+  #     secret:
+  #       secretName: google-creds
 
   # -- Backstage container init containers
   initContainers: []
@@ -264,7 +264,7 @@ backstage:
 service:
 
   # -- Kubernetes Service type
-  type: ClusterIP
+  type: LoadBalancer
 
   # -- Backstage svc port for client connections
   ports:
@@ -366,7 +366,8 @@ postgresql:
 
     # -- Password for the custom user to create
     password: ""
-
+    allowEmptyPassword: true
+    
     # -- Name of existing secret to use for PostgreSQL credentials
     existingSecret: "my-backstage-secrets"
 
