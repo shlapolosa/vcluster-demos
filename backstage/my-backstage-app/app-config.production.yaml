@@ -137,12 +137,6 @@ catalog:
       rules:
         - allow: [Template, User, Group]
         
-    # Civo Cluster
-    - type: file
-      target: /app/templates/civo-cluster/template.yaml
-      rules:
-        - allow: [Template, User, Group]
-
     ## Uncomment these lines to add more example data
     # - type: url
     #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
@@ -164,10 +158,10 @@ kubernetes:
           authProvider: 'serviceAccount'
           skipTLSVerify: false
           skipMetricsLookup: false
-          serviceAccountToken: ${K8S_SA_TOKEN}
+          # serviceAccountToken: ${K8S_SA_TOKEN}
           # dashboardUrl: http://127.0.0.1:64713 # url copied from running the command: minikube service kubernetes-dashboard -n kubernetes-dashboard
           # dashboardApp: standard
-          caData: ${K8S_CONFIG_CA_DATA}
+          # caData: ${K8S_CONFIG_CA_DATA}
           # caFile: '' # local path to CA file
     - type: 'gke'
       projectId: 'crossplaneprojects'

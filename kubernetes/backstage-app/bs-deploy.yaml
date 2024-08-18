@@ -17,7 +17,7 @@ spec:
       serviceAccountName: backstage-service-account
       containers:
         - name: backstage-app
-          image: socrates12345/backstage:1.0.2
+          image: socrates12345/backstage:1.0.6
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
@@ -27,6 +27,9 @@ spec:
                 name: postgres-secrets
             - secretRef:
                 name: backstage-secrets
+            - secretRef:
+                name: my-backstage-secrets
+ 
           env:
           - name: POSTGRES_PORT
             value: "5432"
