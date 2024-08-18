@@ -8,6 +8,8 @@
 
 import Router from 'express-promise-router';
 import kubernetes from './plugins/kubernetes';
+import { createRouter, CatalogBuilder } from '@backstage/plugin-catalog-backend';
+import { ClusterClaimProcessor } from './plugins/clusterClaimProcessor';
 import {
   createServiceBuilder,
   loadBackendConfig,
@@ -79,7 +81,12 @@ async function main() {
   });
   const createEnv = makeCreateEnv(config);
 
-  const catalogEnv = useHotMemoize(module, () => createEnv('catalog'));
+  const catalogEnv = useHotMemoize(module, () => {
+    const env = createEnv('catalog');
+    const builder = new CatalogBuilder(env);
+    builder.addProcessor(new ClusterClaimProcessor());
+    return builder.build();
+  });
   const scaffolderEnv = useHotMemoize(module, () => createEnv('scaffolder'));
   const authEnv = useHotMemoize(module, () => createEnv('auth'));
   const proxyEnv = useHotMemoize(module, () => createEnv('proxy'));
