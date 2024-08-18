@@ -1,0 +1,17 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.clusterName }}
+  description: A Civo Kubernetes cluster
+  tags:
+    - civo
+    - kubernetes
+spec:
+  type: service
+  lifecycle: experimental
+  owner: user:guest
+  dependsOn:
+    - apiVersion: argoproj.io/v1alpha1
+      kind: Application
+      name: ${{ values.clusterName }}
+      namespace: argocd
