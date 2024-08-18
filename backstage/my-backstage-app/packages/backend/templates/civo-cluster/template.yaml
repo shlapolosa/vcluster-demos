@@ -40,14 +40,21 @@ spec:
             - g3.k3s.medium
             - g3.k3s.large
             - g3.k3s.xlarge
+        version:
+          title: K8s Version
+          type: string
+          description: The K8s version to deploy
+          enum:
+            - "1.28"
+            - "1.29"
         minNodeCount:
           title: Minimum Node Count
-          type: integer
+          type: number
           description: The minimum number of nodes in the cluster
-        version:
-          title: Kubernetes Version
-          type: string
-          description: The Version of the Created Cluster
+          enum:
+            - 1
+            - 2
+            - 3
           
   steps:
     - id: fetch-base
