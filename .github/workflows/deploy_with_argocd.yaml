@@ -42,16 +42,16 @@ jobs:
 
     - name: Deploy Cluster with Argo CD
       run: |
-          argocd app create ${{ github.event.inputs.clusterName }} \
-            --repo ${{ github.event.inputs.repoURLforArgo }} \
-            --path . \
-            --dest-server https://kubernetes.default.svc \
-            --dest-namespace ${{ github.event.inputs.clusterName }} \
-            --project default \
-            --sync-policy automated \
-            --sync-option CreateNamespace=true \
-            --upsert \
-            --grpc-web
+        argocd app create ${{ github.event.inputs.clusterName }} \
+          --repo ${{ github.event.inputs.repoURLforArgo }} \
+          --path . \
+          --dest-server https://kubernetes.default.svc \
+          --dest-namespace ${{ github.event.inputs.clusterName }} \
+          --project default \
+          --sync-policy automated \
+          --sync-option CreateNamespace=true \
+          --upsert \
+          --grpc-web
         if [ "${{ github.event.inputs.provider }}" = "civo" ]; then
           echo "Deploying to Civo"
           # Add Civo-specific deployment commands here
