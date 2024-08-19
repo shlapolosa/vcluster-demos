@@ -1,7 +1,7 @@
 apiVersion: devopstoolkitseries.com/v1alpha1
 kind: ClusterClaim
 metadata:
-  name: ${{ values.clusterName }}
+  name: ${{ values.clusterName | dump }}
   namespace: infra
 spec:
   id: ${{ values.clusterName }}

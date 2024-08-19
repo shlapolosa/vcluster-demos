@@ -2,14 +2,17 @@
 apiVersion: devopstoolkitseries.com/v1alpha1
 kind: ClusterClaim
 metadata:
-  name: workload
+  name: '123456'
   namespace: infra
 spec:
-  id: previews
+  id: '123456'
   compositionSelector:
     matchLabels:
       provider: civo
       cluster: kubernetes
   parameters:
-    nodeSize: g4s.kube.small
+    nodeSize: g3.k3s.medium
     minNodeCount: 1
+    version: "1.28"
+  writeConnectionSecretToRef:
+    name: '123456'
