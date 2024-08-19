@@ -89,12 +89,12 @@ spec:
           minNodeCount: ${{ parameters.minNodeCount | string}}
           version: ${{ parameters.version | string}}
           provider: 'civo'
-    - id: register
-      name: Register
-      action: catalog:register
-      input:
-        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
-        catalogInfoPath: '/catalog-info.yaml'
+    # - id: register
+    #   name: Register
+    #   action: catalog:register
+    #   input:
+    #     repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+    #     catalogInfoPath: '/catalog-info.yaml'
         
   output:
     links:
