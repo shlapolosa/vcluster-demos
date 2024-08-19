@@ -2,14 +2,14 @@
 apiVersion: devopstoolkitseries.com/v1alpha1
 kind: ClusterClaim
 metadata:
-  name: previews
+  name: workload
   namespace: infra
 spec:
   id: previews
   compositionSelector:
     matchLabels:
-      provider: provider-civo
-      cluster: ck-all
+      provider: civo
+      cluster: kubernetes
   parameters:
     nodeSize: g4s.kube.small
-    minNodeCount: 3  
+    minNodeCount: 1
