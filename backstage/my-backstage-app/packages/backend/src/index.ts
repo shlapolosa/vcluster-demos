@@ -7,6 +7,7 @@
  */
 
 import Router from 'express-promise-router';
+import { ClusterClaimProcessor } from './plugins/clusterClaimProcessor';
 import kubernetes from './plugins/kubernetes';
 import {
   createServiceBuilder,
@@ -32,6 +33,7 @@ import search from './plugins/search';
 import { PluginEnvironment } from './types';
 import { ServerPermissionClient } from '@backstage/plugin-permission-node';
 import { DefaultIdentityClient } from '@backstage/plugin-auth-node';
+import { CatalogBuilder } from '@backstage/plugin-catalog-backend';
 
 function makeCreateEnv(config: Config) {
   const root = getRootLogger();
@@ -79,7 +81,16 @@ async function main() {
   });
   const createEnv = makeCreateEnv(config);
 
-  const catalogEnv = useHotMemoize(module, () => createEnv('catalog'));
+  const catalogEnv = useHotMemoize(module, () => {
+    const env = createEnv('catalog');
+    
+    // Register the custom processor here
+    const builder = CatalogBuilder.create(env);
+    builder.addProcessor(new ClusterClaimProcessor());
+
+    return env;
+  });
+
   const scaffolderEnv = useHotMemoize(module, () => createEnv('scaffolder'));
   const authEnv = useHotMemoize(module, () => createEnv('auth'));
   const proxyEnv = useHotMemoize(module, () => createEnv('proxy'));

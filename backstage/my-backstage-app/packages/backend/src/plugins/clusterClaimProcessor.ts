@@ -1,11 +1,5 @@
-import {
-  CatalogProcessor,
-  CatalogProcessorEmit,
-  CatalogProcessorParser,
-  CatalogProcessorResult,
-  processingResult,
-} from '@backstage/plugin-catalog-backend';
 import { Entity } from '@backstage/catalog-model';
+import { CatalogProcessor, CatalogProcessorEmit } from '@backstage/plugin-catalog-node';
 
 export class ClusterClaimProcessor implements CatalogProcessor {
   getProcessorName(): string {
@@ -13,25 +7,11 @@ export class ClusterClaimProcessor implements CatalogProcessor {
   }
 
   async validateEntityKind(entity: Entity): Promise<boolean> {
-    return entity.kind.toLowerCase() === 'clusterclaim';
+    return entity.apiVersion === 'devopstoolkitseries.com/v1alpha1' && entity.kind === 'ClusterClaim';
   }
 
-  async readLocation(
-    location: { type: string; target: string },
-    optional: boolean,
-    emit: CatalogProcessorEmit,
-    parser: CatalogProcessorParser,
-  ): Promise<boolean> {
-    if (location.type !== 'url') {
-      return false;
-    }
-
-    const data = await parser({ type: 'url', target: location.target });
-    if (data.kind.toLowerCase() === 'clusterclaim') {
-      emit(processingResult.entity(location, data));
-      return true;
-    }
-
-    return false;
+  async postProcessEntity(entity: Entity, _location: any, emit: CatalogProcessorEmit): Promise<Entity> {
+    // Handle any specific processing for ClusterClaim
+    return entity;
   }
 }
