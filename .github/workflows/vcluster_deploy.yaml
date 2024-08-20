@@ -12,21 +12,6 @@ on:
       hostClusterType:
         description: 'The type of the host K8s cluster, either eks, gke, or aks'
         required: true      
-      hostEKSClusterName:
-        description: 'The name of the host EKS cluster'
-        required: false
-      hostEKS_URLforArgo: 
-        description: 'The URL of the host EKS cluster in Argo CD for vcluster and API deployment'
-        required: false
-      hostAKSClusterName:
-        description: 'The name of the host AKS cluster'
-        required: false
-      hostAKS_URLforArgo: 
-        description: 'The URL of the host AKS cluster in Argo CD for vcluster and API deployment'
-        required: false
-      hostGKEprojectName:
-        description: 'The name of the host GKE project'
-        required: false
       hostCIVO_URLforArgo: 
         description: 'The URL of the host CIVO cluster in Argo CD for vcluster and API deployment'
         required: false
