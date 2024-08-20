@@ -85,7 +85,7 @@ spec:
           # hostGKE_URLforArgo: https://34.23.68.174
           # hostAKSClusterName: aks-host-cluster
           # hostAKS_URLforArgo: https://
-          # hostClusterType: ${{ parameters.hostClusterType | string}}
+          hostClusterType: ${{ parameters.hostClusterType | string}}
           hostCIVO_URLforArgo: ${{ secrets.ARGOCD_SERVER }}
           hostCIVOprojectName: ${{ parameters.clusterName }}
           hostCIVOClusterName: ${{ parameters.clusterName }}
