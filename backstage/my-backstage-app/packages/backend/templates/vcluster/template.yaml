@@ -71,7 +71,7 @@ spec:
       action: github:actions:dispatch
       input:
         workflowId: vcluster_deploy.yaml
-        repoUrl: 'github.com?owner=socrates-kubefirst&repo=vcluster-demos'
+        repoUrl: 'github.com?owner=shlapolosa&repo=vcluster-demos'
         branchOrTagName: 'master'
         workflowInputs:
           clusterName: ${{ parameters.clusterName }}
@@ -86,6 +86,9 @@ spec:
           hostAKSClusterName: aks-host-cluster
           hostAKS_URLforArgo: https://
           hostClusterType: ${{ parameters.hostClusterType | string}}
+          hostCIVO_URLforArgo: ${{ secrets.ARGOCD_SERVER }}
+          hostCIVOprojectName: ${{ parameters.clusterName }}
+          hostCIVOClusterName: ${{ parameters.clusterName }}
     # The final step is to register our new component in the catalog.
     - id: register
       name: Register
