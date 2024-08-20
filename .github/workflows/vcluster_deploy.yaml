@@ -81,6 +81,8 @@ jobs:
           DEST_SERVER="${{ github.event.inputs.hostCIVO_URLforArgo }}"
         fi
     
+        DEST_SERVER="${{ github.event.inputs.hostCIVO_URLforArgo }}"
+
         argocd app create ${{ github.event.inputs.clusterName }} \
           --repo ${{ github.event.inputs.repoURLforArgo }} \
           --path vcluster_scripts/vcluster-helm \
