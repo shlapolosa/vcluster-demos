@@ -139,41 +139,17 @@ kubectl describe pod backstage-app-654bc44b4c-ph56b -n backstage
 
 kubectl logs backstage-app-54cfcf68c4-z4trm -n backstage
 
-kubectl port-forward -n backstage service/backstage-app 80 
 
+```
+in another window
 
+```
+kubectl port-forward -n backstage service/backstage-app 80
 ```
 
 then log onto the deployed service on port http://localhost:80
 
 ### Backstage changes
-
-firstly change eks-cluster-crossplane and create civo equivalant.
-
-will also have to change the vcluster template with similar
-
-
-
-#### Login to the UI
-To access ArgoCD, you will need the initial admin password. You can get it using the command below:
-
-```bash
-kubectl get secret -n argocd argocd-initial-admin-secret -o json | jq -r '.data.password' | base64 --decode
-```
-
-And then use the username admin with this password to log in to ArgoCD.
-
-You can port forward the service like this:
-
-```bash
-kubectl port-forward -n argocd service/argocd-server 8080:443
-```
-
-#### Login to the CLI
-
-```bash
-argocd login 127.0.0.1:8080 --username admin --password $(kubectl get secret -n argocd argocd-initial-admin-secret -o json | jq -r '.data.password' | base64 --decode) --grpc-web --insecure
-```
 
 #### Use ngrok for GitHub to connect to ArgoCD
 
@@ -181,60 +157,6 @@ When Backstage creates a new GitHub repo, we need to get GitHub actions to creat
 
 First, [sign up](https://dashboard.ngrok.com/signup) for a free ngrok account and get an authtoken
 
-1. Add authtoken
-```bash
-ngrok config add-authtoken <token>
-```
-
-2. Start a tunnel
-```bash
-ngrok http https://localhost:8080
-```
-
-You'll get something like this:
-```bash
-Forwarding                    https://a7eb-24-150-170-114.ngrok-free.app -> https://localhost:8080
-```
-
-The `https://a7eb-24-150-170-114.ngrok-free.app` address is your ngrok forwarding address. You can use this to connect to your local ArgoCD instance from GitHub. Traffic will get forward to your local ArgoCD server running on `localhost:8080`.
-
-### Get an ArgoCD Token for Backstage Plugin
-
-To allow Backstage to interact with ArgoCD, you'll need to generate an ArgoCD API token. You can do this by running the following command:
-
-#### Allow admin account to create API tokens
-
-First wee need to allow the admin account to create API tokens. We can do this by editing the `argocd-cm` ConfigMap and adding the following:
-
-```bash
-kubectl patch -n argocd configmap argocd-cm --type merge -p '{"data":{"accounts.admin":"apiKey"}}'
-```
-
-#### Generate the Token
-
-Now you can generate an API token by running the command:
-```bash
-argocd account generate-token
-```
-
-or directly from the UI under `settings > accounts`
-
-Now take this token and put in the Backstage `secrets.sh` file that you will create later in the Backstage section. It will look something like this:
-
-```bash
-export ARGOCD_AUTH_TOKEN=
-```
-
-## Update GitHub Actions Workflow
-
-In the `.github/workflows/deploy_with_argocd.yaml` workflow file we do the following: 
-
-1. Install the Argo CD CLI
-2. Login to the Argo CD server using credentials from GitHub secrets
-3. Add the repository that will be monitored by Argo CD
-4. Use the Argo CD CLI to create a new application for the cluster, pointing to the repository path that contains the cluster manifests. This will make Argo CD deploy and sync the cluster.
-
-So in summary, it enables GitOps workflow for provisioning and managing Kubernetes clusters using Argo CD, triggered by GitHub Actions.
 
 Notice that you will need to fill in secrets in the GitHub Actions Secrets section as shown in the image below:
 
@@ -260,120 +182,8 @@ ARGOCD_USER -> admin
 
 Most of the crossplane configuration in this repo were taken from Viktor Farcic, so shout out to him. Here is his original repo: https://github.com/vfarcic/crossplane-kubernetes
 
-### AWS
-
-#### Step 1: Prepare Your Credentials
-
-Make sure you're in the `crossplane` folder.
-
-You'll need your AWS Access Key ID and Secret Access Key. If you're using TeKanAid Premium, you can get these from the lesson on setting up AWS.
-
-These should be formatted as follows in a file called `aws_credentials.conf` I have an example file for you called `aws_credentials-example.conf`:
-
-```ini
-[default]
-aws_access_key_id = YOUR_ACCESS_KEY_ID
-aws_secret_access_key = YOUR_SECRET_ACCESS_KEY
-```
-
-Replace `YOUR_ACCESS_KEY_ID` and `YOUR_SECRET_ACCESS_KEY` with your actual AWS credentials and rename the file to `aws_credentials.conf`. If you are a TeKanAid Premium subscriber, you can get these credentials from the TeKanAid lesson for setting up AWS.
 
 
-### Step 2: Create the Secret in Kubernetes
-
-You can create the Kubernetes secret from the `credentials.conf` file using `kubectl`. 
-
-Run the following command:
-
-```sh
-kubectl create secret generic aws-creds --from-file=creds=/workspaces/platform-engineering-playground/crossplane/aws_credentials.conf -n crossplane-system
-```
-
-This command does the following:
-- `create secret generic aws-creds` tells Kubernetes to create a new generic secret named `aws-creds`.
-- `--from-file=creds=./credentials.conf` adds the content of your `credentials.conf` file to the secret under the key `creds`.
-- `-n crossplane-system` specifies the namespace `crossplane-system` for the secret.
-
-### Step 3: Verify the Secret
-
-After creating the secret, you can verify it's correctly created in the `crossplane-system` namespace by running:
-
-```sh
-kubectl get secret aws-creds -n crossplane-system -o yaml
-```
-
-This command shows the details of the `aws-creds` secret. For security reasons, the actual credentials content will be base64 encoded.
-
-### GCP
-
-From the root of the repo run the following. Make sure you have your `google-creds.json` file present at `backstage/my-backstage-app/packages/backend/google-creds.json`
-```bash
-kubectl --namespace crossplane-system \
-    create secret generic gcp-creds \
-    --from-file creds=./backstage/my-backstage-app/packages/backend/google-creds.json
-```
-
-Now create the ProviderConfig after replacing the `<PROJECT_ID>` with your own project ID.
-
-```bash
-export PROJECT_ID=<PROJECT_ID>
-echo "apiVersion: gcp.upbound.io/v1beta1
-kind: ProviderConfig
-metadata:
-  name: default
-spec:
-  projectID: $PROJECT_ID
-  credentials:
-    source: Secret
-    secretRef:
-      namespace: crossplane-system
-      name: gcp-creds
-      key: creds" \
-    | kubectl apply --filename -
-```
-
-## Create K8s Clusters with Crossplane
-
-### EKS
-
-#### Create the Cluster
-
-You could create an EKS cluster directly as shown below or use backstage template to to do that which will use ArgoCD. The backstage template is explained later on.
-
-```bash
-kubectl create namespace infra
-kubectl --namespace infra apply --filename ./crossplane/eks_claim.yaml
-kubectl --namespace infra get clusterclaims
-kubectl get managed
-```
-
-#### Access the Cluster
-
-```bash
-kubectl get secret a-team-eks-cluster -o jsonpath='{.data.kubeconfig}' | base64 -d > eks-kubeconfig.yaml
-export KUBECONFIG=$(pwd)/eks-kubeconfig.yaml
-kubectl get nodes
-kubectl get namespaces
-```
-
-### GCP
-
-#### Create the Cluster
-
-You could create an GKE cluster directly as shown below or use backstage template to to do that which will use ArgoCD. The backstage template is explained later on.
-
-```bash
-kubectl create namespace infra
-kubectl --namespace infra apply --filename ./crossplane/gke_claim.yaml
-kubectl --namespace infra get clusterclaims
-kubectl get managed
-```
-
-To get the kubeconfig:
-
-```bash
-gcloud container clusters get-credentials samgke --region us-east1 --project crossplaneprojects
-```
 
 ## Delete the K8s Cluster with Crossplane
 

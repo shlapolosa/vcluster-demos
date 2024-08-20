@@ -37,9 +37,9 @@ spec:
           type: string
           description: The size of the nodes in the cluster
           enum:
-            - g3.k3s.medium
-            - g3.k3s.large
-            - g3.k3s.xlarge
+            - g4s.kube.small
+            - g4s.kube.medium
+            - g4s.kube.large
         version:
           title: K8s Version
           type: string
