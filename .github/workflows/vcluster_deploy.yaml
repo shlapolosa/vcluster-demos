@@ -24,12 +24,6 @@ on:
       hostAKS_URLforArgo: 
         description: 'The URL of the host AKS cluster in Argo CD for vcluster and API deployment'
         required: false
-      hostGKEClusterName:
-        description: 'The name of the host GKE cluster'
-        required: false
-      hostGKE_URLforArgo: 
-        description: 'The URL of the host GKE cluster in Argo CD for vcluster and API deployment'
-        required: false
       hostGKEprojectName:
         description: 'The name of the host GKE project'
         required: false
