@@ -17,7 +17,7 @@ spec:
       serviceAccountName: backstage-service-account
       containers:
         - name: backstage-app
-          image: socrates12345/backstage:1.2.5
+          image: socrates12345/backstage:1.2.11
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

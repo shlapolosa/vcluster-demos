@@ -33,7 +33,15 @@ on:
       hostGKEprojectName:
         description: 'The name of the host GKE project'
         required: false
-
+      hostCIVO_URLforArgo: 
+        description: 'The URL of the host CIVO cluster in Argo CD for vcluster and API deployment'
+        required: false
+      hostCIVOprojectName:
+        description: 'The name of the host CIVO project'
+        required: false
+      hostCIVOClusterName:
+        description: 'The name of the host CIVO cluster'
+        required: false
 jobs:
   deploy-vcluster:
     runs-on: ubuntu-latest
@@ -72,6 +80,14 @@ jobs:
     - name: Get DNS Ready
       run: backstage/my-backstage-app/packages/backend/templates/vcluster/content/vcluster_scripts/setdns.sh ${{ github.event.inputs.clusterName }} ${{ secrets.CF_ZONE_ID }} ${{ secrets.CF_API_TOKEN }} ${{ secrets.TARGET_DOMAIN }} ${{ github.event.inputs.hostClusterType }}
 
+    - name: Install Civo CLI
+      if: ${{ github.event.inputs.hostClusterType }} == 'civo'
+      run: |
+        curl -sL https://civo.com/get | sh
+        civo apikey add default ${{ secrets.CIVO_TOKEN }}
+        civo region current # to verify the region
+
+
     - name: Deploy vcluster
       run: |
         helm repo add loft https://charts.loft.sh
@@ -83,9 +99,7 @@ jobs:
         elif [ "${{ github.event.inputs.hostClusterType }}" = "aks" ]; then
           DEST_SERVER="${{ github.event.inputs.hostAKS_URLforArgo }}"
         elif [ "${{ github.event.inputs.hostClusterType }}" = "civo" ]; then
-          DEST_SERVER="https://api.civo.com"
-          echo "Unsupported cluster type: ${{ github.event.inputs.hostClusterType }}"
-          exit 1
+          DEST_SERVER="${{ github.event.inputs.hostCIVO_URLforArgo }}"
         fi
     
         argocd app create ${{ github.event.inputs.clusterName }} \
@@ -132,6 +146,10 @@ jobs:
         elif [ "${{ github.event.inputs.hostClusterType }}" = "aks" ]; then
           echo "Configuring Azure AKS..."
           # Add commands to configure AKS kubeconfig here
+        elif [ "${{ github.event.inputs.hostClusterType }}" = "civo" ]; then
+          echo "Configuring Civo Kubernetes..."
+          civo kubernetes config ${{ github.event.inputs.hostCIVOClusterName }} --save
+          export KUBECONFIG=$HOME/.kube/config
         fi
         VCLUSTER_KUBECONFIG_BASE64=$(kubectl get secret vc-${{ github.event.inputs.clusterName }} -n ${{ github.event.inputs.clusterName }} --template={{.data.config}})
         echo $VCLUSTER_KUBECONFIG_BASE64
