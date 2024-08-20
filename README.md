@@ -10,28 +10,43 @@ This repo is used for demoing vCluster in a Platform Engineering Playground. Too
 - GitHub Actions
 - vClusters
 
-You can run this playground in your own environment or request a K8s cluster from the Platform Engineering Playground on TeKanAid Academy. Either way, make sure to fork this repo to have full control over it. You will need this for ArgoCD among other things.
+# Architecture 
+![Architecture](./backstage.png)
 
-Once you have a running K8s cluster you can proceed to install the script below.
 
-Run the `install_script.sh` to install ArgoCD and Crossplane. It will also get Backstage ready. You'll need to create a few more configurations before running Backstage.
+### Required
+
+kubectl
+civo and CIVOT_TOKEN set 
 
 ## Management Cluster
 
 cd istio_lessons/istio-terraform
 
 ```
+terraform apply -target=civo_kubernetes_cluster.kubefirst -var="civo_token=$CIVO_TOKEN"
+
 terraform apply -target=local_file.kubeconfig -var="civo_token=$CIVO_TOKEN"
 ```
+# Note! might have to remove all backups and run terraform init again
 
 cd vcluster-demos/crossplane
 
 ```
 civo kubernetes config management --save --switch
+kubectl cluster info
+
+helm repo add crossplane-stable https://charts.crossplane.io/stable
+
+helm repo update
 
 helm upgrade --install crossplane crossplane-stable/crossplane --namespace crossplane-system --create-namespace --wait
 
+export CIVO_TOKEN_ENCODED=$(echo $CIVO_TOKEN | base64)
+
 echo "apiVersion: v1\nkind: Secret\nmetadata:\n  name: civo-creds\ntype: Opaque\ndata:\n  credentials: $CIVO_TOKEN_ENCODED" | kubectl --namespace crossplane-system apply --filename -
+
+kubectl get secret civo-creds -n crossplane-system -o yaml
 
 kubectl apply -f xrds.yaml
 kubectl apply -f providers/civo.yaml
@@ -39,6 +54,11 @@ kubectl apply -f compositions.yaml
 kubectl apply -f provider-configs/provider-config-civo.yaml
 kubectl create ns infra 
 kubectl apply -f civo_claim.yaml
+
+kubectl get compositeclusters
+kubectl describe compositecluster civo-crossplane-cluster-rvpb7
+kubectl get civokubernetes
+
 ```
 
 Note! At this point even if you workload cluster, it will get recreated by crossplane because its now being managed by kubernetes

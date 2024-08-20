@@ -2,17 +2,17 @@
 apiVersion: devopstoolkitseries.com/v1alpha1
 kind: ClusterClaim
 metadata:
-  name: '123456'
+  name: 'civo-crossplane-cluster'
   namespace: infra
 spec:
-  id: '123456'
+  id: 'civo-crossplane-cluster'
   compositionSelector:
     matchLabels:
       provider: civo
       cluster: kubernetes
   parameters:
-    nodeSize: g3.k3s.medium
+    nodeSize: g4s.kube.large
     minNodeCount: 1
-    version: "1.28"
+    version: "1.28.7"
   writeConnectionSecretToRef:
-    name: '123456'
+    name: 'civo-crossplane-cluster'
