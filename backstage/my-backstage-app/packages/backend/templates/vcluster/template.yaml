@@ -46,6 +46,7 @@ spec:
             - eks
             - gke
             - aks
+            - civo
 
   steps:
     - id: fetch-base

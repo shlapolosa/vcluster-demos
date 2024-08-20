@@ -81,14 +81,22 @@ async function main() {
   });
   const createEnv = makeCreateEnv(config);
 
-  const catalogEnv = useHotMemoize(module, () => {
+  const catalogEnv = useHotMemoize(module, async () => {
     const env = createEnv('catalog');
     
-    // Register the custom processor here
-    const builder = CatalogBuilder.create(env);
-    builder.addProcessor(new ClusterClaimProcessor());
+    // Create a CatalogBuilder and add the ClusterClaimProcessor
+    const builder = await CatalogBuilder.create(env);
 
-    return env;
+    // Register your custom ClusterClaimProcessor
+    builder.addProcessor(new ClusterClaimProcessor({
+      logger: env.logger,
+      discovery: env.discovery,
+    }));
+
+    const { processingEngine, router } = await builder.build();
+    processingEngine.start();
+
+    return router;
   });
 
   const scaffolderEnv = useHotMemoize(module, () => createEnv('scaffolder'));
@@ -100,7 +108,7 @@ async function main() {
   const kubernetesEnv = useHotMemoize(module, () => createEnv('kubernetes'));
 
   const apiRouter = Router();
-  apiRouter.use('/catalog', await catalog(catalogEnv));
+  apiRouter.use('/catalog', await catalogEnv); // Ensure the router is awaited
   apiRouter.use('/scaffolder', await scaffolder(scaffolderEnv));
   apiRouter.use('/auth', await auth(authEnv));
   apiRouter.use('/techdocs', await techdocs(techdocsEnv));
