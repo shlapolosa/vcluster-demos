@@ -26,16 +26,52 @@ cd istio_lessons/istio-terraform
 ```
 terraform apply -target=civo_kubernetes_cluster.kubefirst -var="civo_token=$CIVO_TOKEN"
 
-terraform apply -target=local_file.kubeconfig -var="civo_token=$CIVO_TOKEN"
 ```
 # Note! might have to remove all backups and run terraform init again
+
+
 
 cd vcluster-demos/crossplane
 
 ```
+civo apikey add default ${CIVO_TOKEN}
+
 civo kubernetes config management --save --switch
 kubectl cluster info
+```
 
+## Access ArgoCD on the management cluster
+
+```
+kubectl create namespace argocd
+
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+helm repo add bitnami https://charts.bitnami.com/bitnami\nhelm repo add backstage https://backstage.github.io/charts
+
+kubectl create ns backstage
+
+kubectl get secret -n argocd argocd-initial-admin-secret -o json | jq -r '.data.password' | base64 --decode
+
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+
+kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+
+
+kubectl patch -n argocd configmap argocd-cm --type merge -p '{"data":{"accounts.admin":"apiKey"}}'
+
+
+argocd login <hostname above> --username admin --password <password above> --insecure
+
+export ARGOCD_AUTH_TOKEN=$(argocd account generate-token)
+
+update action secrets in github and update secretes file in backstage folder
+
+```
+
+# Crossplane
+
+```
 helm repo add crossplane-stable https://charts.crossplane.io/stable
 
 helm repo update
@@ -67,39 +103,21 @@ Note! At this point even if you workload cluster, it will get recreated by cross
 kubectl delete -f civo_claim.yaml
 ```
 
-### Access ArgoCD on the management cluster
 
-```
-kubectl create namespace argocd
-
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-
-helm repo add bitnami https://charts.bitnami.com/bitnami\nhelm repo add backstage https://backstage.github.io/charts
-
-kubectl create ns backstage
-
-kubectl get secret -n argocd argocd-initial-admin-secret -o json | jq -r '.data.password' | base64 --decode
-
-kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
-
-kubectl get svc argocd-server -n argocd -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
-
-
-kubectl patch -n argocd configmap argocd-cm --type merge -p '{"data":{"accounts.admin":"apiKey"}}'
-
-
-argocd login 08a32d5e-2838-4ecc-bc29-ec78dbb7e16d.lb.civo.com --username admin --password JaltVFkhJTTJig63
-
-export ARGOCD_AUTH_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJhcmdvY2QiLCJzdWIiOiJhZG1pbjphcGlLZXkiLCJuYmYiOjE3MjM4MTU2NjYsImlhdCI6MTcyMzgxNTY2NiwianRpIjoiYWI0NmEwNjYtZjEzMi00Mjg0LWE5YTYtNGQxOGQ2N2Q0MThlIn0._sAUaY9BuptdsW3QeyFb2Qi4ZyeqgPtvBL27sI8zxIk
-
-update action secrets in github and update secretes file in backstage folder
-
-```
 ### Backstage
 
+After updating secrets, copy secrets-example.sh to secrets.sh, then run 
 ```
 cd vcluster-demos/backstage/my-backstage-app
 
+./create_k8s_secrets_for_backstage.sh
+
+kubectl apply -f my-backstage-secrets.yaml
+```
+
+ 
+
+```
 yarn install --frozen-lockfile                                           
 yarn tsc
 yarn build:backend

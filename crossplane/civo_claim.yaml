@@ -2,10 +2,10 @@
 apiVersion: devopstoolkitseries.com/v1alpha1
 kind: ClusterClaim
 metadata:
-  name: 'civo-crossplane-cluster'
+  name: 'civo-crossplane-workload-cluster'
   namespace: infra
 spec:
-  id: 'civo-crossplane-cluster'
+  id: 'civo-crossplane-workload-cluster'
   compositionSelector:
     matchLabels:
       provider: civo
@@ -13,6 +13,6 @@ spec:
   parameters:
     nodeSize: g4s.kube.large
     minNodeCount: 1
-    version: "1.28.7"
+    version: "1.28.7-k3s1"
   writeConnectionSecretToRef:
-    name: 'civo-crossplane-cluster'
+    name: 'civo-crossplane-workload-cluster'

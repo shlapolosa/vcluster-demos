@@ -45,8 +45,9 @@ spec:
           type: string
           description: The K8s version to deploy
           enum:
-            - "1.28"
-            - "1.29"
+            - "1.27.0"
+            - "1.28.7-k3s1"
+            - "1.29.2-k3s1"
         minNodeCount:
           title: Minimum Node Count
           type: number

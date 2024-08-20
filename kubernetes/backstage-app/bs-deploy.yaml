@@ -17,14 +17,12 @@ spec:
       serviceAccountName: backstage-service-account
       containers:
         - name: backstage-app
-          image: socrates12345/backstage:1.2.18
+          image: socrates12345/backstage:2.0.0
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
               containerPort: 7007
           envFrom:
-            - secretRef:
-                name: postgres-secrets
             - secretRef:
                 name: backstage-secrets
             - secretRef:

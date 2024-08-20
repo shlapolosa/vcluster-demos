@@ -7,7 +7,7 @@
  */
 
 import Router from 'express-promise-router';
-import { ClusterClaimProcessor } from './plugins/clusterClaimProcessor';
+// import { ClusterClaimProcessor } from './plugins/clusterClaimProcessor';
 import kubernetes from './plugins/kubernetes';
 import {
   createServiceBuilder,
@@ -85,7 +85,7 @@ async function main() {
     const env = createEnv('catalog');
     
     // Register the custom processor here
-    const builder = CatalogBuilder.create(env);
+    CatalogBuilder.create(env);
     // builder.addProcessor(new ClusterClaimProcessor());
     return env;
   });
