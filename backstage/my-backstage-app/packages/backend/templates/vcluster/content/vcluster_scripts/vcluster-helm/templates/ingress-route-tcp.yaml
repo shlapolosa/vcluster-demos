@@ -7,7 +7,7 @@ spec:
   entryPoints:
     - websecure
   routes:
-    - match: HostSNI(`{{ .Release.Namespace }}.tekanaid.com`)
+    - match: HostSNI(`{{ .Release.Namespace }}.socrateshlapolosa.com`)
       services:
         - name: {{ .Release.Namespace }}
           port: 443
