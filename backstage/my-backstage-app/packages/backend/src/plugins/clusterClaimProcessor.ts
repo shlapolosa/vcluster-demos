@@ -7,6 +7,10 @@ export class ClusterClaimProcessor implements CatalogProcessor {
   }
 
   async validateEntityKind(entity: Entity): Promise<boolean> {
+    if (entity.apiVersion.includes('clusterclaim:infra')) {
+      console.log('apiVersion:', entity.apiVersion);
+      return true;
+    }
     return entity.apiVersion === 'devopstoolkitseries.com/v1alpha1' && entity.kind === 'ClusterClaim';
   }
 
