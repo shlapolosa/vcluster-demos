@@ -51,7 +51,7 @@ jobs:
         sudo chmod +x /usr/local/bin/argocd
 
     - name: Login to Argo CD
-      run: argocd login ${{ secrets.ARGOCD_SERVER }} --username ${{ secrets.ARGOCD_USER }} --password ${{ secrets.ARGOCD_PASS }} --grpc-web
+      run: argocd login ${{ secrets.ARGOCD_SERVER }} --username ${{ secrets.ARGOCD_USER }} --password ${{ secrets.ARGOCD_PASS }} --grpc-web --insecure
 
     - name: Register Repository in Argo CD
       run: argocd repo add ${{ github.event.inputs.repoURLforArgo }} --username samgabrail --password ${{ secrets.MYGITHUB_TOKEN }}
@@ -64,7 +64,7 @@ jobs:
       run: |
         curl -sL https://civo.com/get | sh
         civo apikey add default ${{ secrets.CIVO_TOKEN }}
-        civo region current # to verify the region
+        civo region ls # to verify the region
 
 
     - name: Deploy vcluster
