@@ -86,7 +86,7 @@ jobs:
         argocd app create ${{ github.event.inputs.clusterName }} \
           --repo ${{ github.event.inputs.repoURLforArgo }} \
           --path vcluster_scripts/vcluster-helm \
-          --helm-set vcluster.syncer.extraArgs[0]="--tls-san=${{ github.event.inputs.clusterName }}.tekanaid.com" \
+          --helm-set vcluster.syncer.extraArgs[0]="--tls-san=${{ github.event.inputs.clusterName }}.socrateshlapolosa.org" \
           --helm-set vcluster.syncer.extraArgs[1]="--out-kube-config-server=https://${{ github.event.inputs.clusterName }}.socrateshlapolosa.org" \
           --dest-server https://kubernetes.default.svc \
           --dest-namespace ${{ github.event.inputs.clusterName }} \
