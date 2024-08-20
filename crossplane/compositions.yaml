@@ -2436,22 +2436,23 @@ spec:
       apiVersion: cluster.civo.crossplane.io/v1alpha1
       kind: CivoKubernetes
       spec:
-        name: "ck-all"
+        name: ""  # Will be patched dynamically from spec.id
         providerConfigRef:
-          name: provider-civo-config  # Change this to your correct ProviderConfig name
-        version: 1.28.7-k3s1
+          name: provider-civo-config  # Ensure this matches your actual ProviderConfig
+        version: ""  # Will be patched dynamically from spec.parameters.version
         pools:
-          - count: 3
+          - count: 0  # Will be patched dynamically from spec.parameters.minNodeCount
         connectionDetails:
           connectionSecretNamePrefix: civo-cluster
           connectionSecretNamespace: crossplane-system
     patches:
     - fromFieldPath: "spec.id"
       toFieldPath: "metadata.name"
-    - fromFieldPath: "spec.parameters.nodeSize"
-      toFieldPath: "spec.pools[0].size"
+    - fromFieldPath: "spec.id"
+      toFieldPath: "spec.name"
     - fromFieldPath: "spec.parameters.minNodeCount"
       toFieldPath: "spec.pools[0].count"
+    - fromFieldPath: "spec.parameters.version"
+      toFieldPath: "spec.version"
   writeConnectionSecretsToNamespace: crossplane-system
-
 
