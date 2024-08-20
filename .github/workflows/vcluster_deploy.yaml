@@ -88,7 +88,7 @@ jobs:
           --path vcluster_scripts/vcluster-helm \
           --helm-set vcluster.syncer.extraArgs[0]="--tls-san=${{ github.event.inputs.clusterName }}.tekanaid.com" \
           --helm-set vcluster.syncer.extraArgs[1]="--out-kube-config-server=https://${{ github.event.inputs.clusterName }}.socrateshlapolosa.org" \
-          --dest-server 08a32d5e-2838-4ecc-bc29-ec78dbb7e16d.lb.civo.com\
+          --dest-server https://kubernetes.default.svc \
           --dest-namespace ${{ github.event.inputs.clusterName }} \
           --project default \
           --sync-policy automated \
