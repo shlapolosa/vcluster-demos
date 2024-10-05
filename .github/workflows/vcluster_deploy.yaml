@@ -135,7 +135,7 @@ jobs:
             "format": "text",
             "json": true,
             "token": "${{ env.AKEYLESS_TOKEN }}",
-            "name": "vclusters/Kubeconfig",
+            "name": "vclusters/${{ github.event.inputs.clusterName }}/Kubeconfig",
             "value": "'"$VCLUSTER_KUBECONFIG_BASE64"'"
           }
           '
