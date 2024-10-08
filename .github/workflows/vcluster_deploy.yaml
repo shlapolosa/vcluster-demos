@@ -130,7 +130,7 @@ jobs:
           gcloud container clusters get-credentials ${{ github.event.inputs.hostGKEClusterName }} --region us-east1 --project ${{ github.event.inputs.hostGKEprojectName }}
         elif [ "${{ github.event.inputs.hostClusterType }}" = "aks" ]; then
           echo "Configuring Azure AKS..."
-          # Add commands to configure AKS kubeconfig here
+          az aks get-credentials --resource-group <resource-group-name> --name ${{ github.event.inputs.hostAKSClusterName }} --overwrite-existing
         fi
         VCLUSTER_KUBECONFIG_BASE64=$(kubectl get secret vc-${{ github.event.inputs.clusterName }} -n ${{ github.event.inputs.clusterName }} --template={{.data.config}})
         echo $VCLUSTER_KUBECONFIG_BASE64
