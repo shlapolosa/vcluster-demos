@@ -120,7 +120,7 @@ jobs:
           gcloud container clusters get-credentials ${{ github.event.inputs.hostGKEClusterName }} --region us-east1 --project ${{ github.event.inputs.hostGKEprojectName }}
         elif [ "${{ github.event.inputs.hostClusterType }}" = "aks" ]; then
           echo "Configuring Azure AKS..."
-          az aks get-credentials --resource-group heathtest1 --name heathtest1 --overwrite-existing
+          az aks get-credentials --resource-group heathtest1 --name prod5 --overwrite-existing
         elif [ "${{ github.event.inputs.hostClusterType }}" = "civo" ]; then
           echo "Configuring Civo Kubernetes..."
           civo kubernetes config ${{ github.event.inputs.hostCIVOClusterName }} --save
