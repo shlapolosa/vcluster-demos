@@ -96,6 +96,7 @@ spec:
         branchOrTagName: 'master'
         workflowInputs:
           clusterName: ${{ parameters.clusterName }}
+          provider: ${{ parameters.provider }}
           nodeSize: ${{ parameters.nodeSize }}
           version: ${{ parameters.version }}
           minNodeCount: ${{ parameters.minNodeCount | string}}
