@@ -11,9 +11,31 @@ spec:
   parameters:
     nodeSize: ${{ values.nodeSize }}
     minNodeCount: ${{ values.minNodeCount }}
+    namespaces: #list of vclusters to create
+      - dev
+      - production
     version: "${{ values.version }}"
     apps:
       traefik:
+        enabled: true
+    usage:
+      # Usage is still in `alpha` and needs to be enabled by add `--set args='{"--enable-usages"}'` to `helm install`.
+      enabled: true
+    apps:
+      crossplane:
+        enabled: true
+      argocd:
+        enabled: true
+        host: argocd.44.212.104.169.nip.io
+        repoURL: https://github.com/vfarcic/crossplane-kubernetes-gitops
+      dapr:
+        enabled: false
+      istio:
+        enabled: true
+        hostname: domain.default.com
+      traefik:
+        enabled: false
+      externalSecrets:
         enabled: true
   writeConnectionSecretToRef:
     name: ${{ values.clusterName }}
