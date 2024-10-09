@@ -89,7 +89,6 @@ jobs:
           --helm-set vcluster.syncer.extraArgs[0]="--tls-san=${{ github.event.inputs.clusterName }}.socrateshlapolosa.org" \
           --helm-set vcluster.syncer.extraArgs[1]="--out-kube-config-server=https://${{ github.event.inputs.clusterName }}.socrateshlapolosa.org" \
           --dest-server https://kubernetes.default.svc \
-          --dest-namespace ${{ github.event.inputs.clusterName }} \
           --project default \
           --sync-policy automated \
           --sync-option CreateNamespace=true \
