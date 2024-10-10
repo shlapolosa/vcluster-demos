@@ -89,18 +89,23 @@ jobs:
         config: ${{ secrets.MANAGEMENT_CLUSTER_KUBECONFIG }}
         command: get secret "${{ github.event.inputs.hostClusterName }}-cluster" -n ${{ github.event.inputs.hostClusterName }} -o jsonpath='{.data.kubeconfig}' | base64 -d > kubeconfig.yaml
 
-      
 
+    - name: Install yq
+      run: |
+        sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
+        sudo chmod +x /usr/bin/yq
+
+ 
     - name: Create Argo CD application
       run: |
         # Temporarily remove set -e and check output
+        API_SERVER=$(yq '.clusters[0].cluster.server' $(pwd)/kubeconfig.yaml)
         echo "KUBECONFIG=$(pwd)/kubeconfig.yaml" >> $GITHUB_ENV
-        API_SERVER=$(kubectl config view --kubeconfig=$(pwd)/kubeconfig.yaml -o jsonpath='{.clusters[0].cluster.server}')
         echo "API_SERVER: $API_SERVER"
-        argocd app create test \
-          --repo https://github.com/shlapolosa/afullcluster \
+        argocd app create "${{ github.event.inputs.hostClusterName }}-${{ github.event.inputs.clusterName }}" \
+          --repo ${{ github.event.inputs.repoURLforArgo }} \
           --path vcluster_scripts/vcluster-helm \
-          --helm-set vcluster.syncer.extraArgs[0]="--tls-san=testing.socrateshlapolosa.org" \
+          --helm-set vcluster.syncer.extraArgs[0]="--tls-san=${{ github.event.inputs.clusterName }}.socrateshlapolosa.org" \
           --helm-set vcluster.syncer.extraArgs[1]="--out-kube-config-server=${API_SERVER}" \
           --dest-server ${API_SERVER} \
           --project default \
@@ -123,6 +128,6 @@ jobs:
             "json": true,
             "token": "${{ env.AKEYLESS_TOKEN }}",
             "name": "vclusters/${{ github.event.inputs.clusterName }}/Kubeconfig",
-            "value": "'"$(cat kubeconfig.yaml)"'"
+            "value": "'"$(pwd)/kubeconfig.yaml"'"
           }
         '
