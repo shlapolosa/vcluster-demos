@@ -79,7 +79,7 @@ jobs:
     - name: Install kubectl
       uses: steebchen/kubectl@master
       env:
-        KUBE_CONFIG_DATA: ${{ secrets.MANAGEMENT_CLUSTER_KUBECONFIG  }}
+        KUBE_CONFIG_DATA: ${{ secrets.MANAGEMENT_CLUSTER_KUBECONFIG2  }}
       with:
         args: config view --minify --context=heathhealth-aks
         
