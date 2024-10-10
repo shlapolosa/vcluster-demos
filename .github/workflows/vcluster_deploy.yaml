@@ -91,12 +91,13 @@ jobs:
 
     - name: Create Argo CD application
       run: |
-        set -e
+        # Temporarily remove set -e and check output
         API_SERVER=$(kubectl config view --kubeconfig=$(pwd)/kubeconfig.yaml -o jsonpath='{.clusters[0].cluster.server}')
-        argocd app create ${{ github.event.inputs.clusterName }} \
-          --repo ${{ github.event.inputs.repoURLforArgo }} \
+        echo "API_SERVER: $API_SERVER"
+        argocd app create testing \
+          --repo https://github.com/shlapolosa/afullcluster \
           --path vcluster_scripts/vcluster-helm \
-          --helm-set vcluster.syncer.extraArgs[0]="--tls-san=${{ github.event.inputs.clusterName }}.socrateshlapolosa.org" \
+          --helm-set vcluster.syncer.extraArgs[0]="--tls-san=testing.socrateshlapolosa.org" \
           --helm-set vcluster.syncer.extraArgs[1]="--out-kube-config-server=${API_SERVER}" \
           --dest-server ${API_SERVER} \
           --project default \
@@ -104,7 +105,7 @@ jobs:
           --sync-option CreateNamespace=true \
           --upsert \
           --grpc-web
-        sleep 30
+
 
     - name: Save Kubeconfig in Akeyless
       run: |
