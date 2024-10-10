@@ -27,8 +27,6 @@ on:
 jobs:
   deploy-vcluster:
     runs-on: ubuntu-latest
-    env:
-      KUBECONFIG: ${{ secrets.MANAGEMENT_CLUSTER_KUBECONFIG }}  # Set once globally
 
     steps:
     - name: Checkout Code
@@ -79,10 +77,11 @@ jobs:
         ${{ secrets.TARGET_DOMAIN }} ${{ github.event.inputs.hostClusterType }}
 
     - name: Install kubectl
-      run: |
-        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-        sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-        kubectl cluster-info --kubeconfig="$KUBECONFIG"
+      uses: steebchen/kubectl@master
+      env:
+        KUBE_CONFIG_DATA: ${{ secrets.MANAGEMENT_CLUSTER_KUBECONFIG  }}
+      with:
+        args: cluster-info
 
     - name: Set KUBECONFIG for the selected host cluster
       id: set-kubeconfig
