@@ -95,6 +95,14 @@ jobs:
         sudo wget https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 -O /usr/bin/yq
         sudo chmod +x /usr/bin/yq
 
+    - name: Add cluster to Argo CD
+      run: |
+        export KUBECONFIG=$(pwd)/kubeconfig.yaml
+        argocd cluster list
+        argocd cluster add --name ${{ github.event.inputs.hostClusterName }} ${{ github.event.inputs.hostClusterName }}
+        argocd cluster list
+
+
  
     - name: Create Argo CD application
       run: |
@@ -113,7 +121,6 @@ jobs:
           --sync-option CreateNamespace=true \
           --upsert \
           --grpc-web
-
 
     - name: Save Kubeconfig in Akeyless
       run: |
