@@ -24,6 +24,9 @@ on:
 jobs:
   deploy-vcluster:
     runs-on: ubuntu-latest
+    env:
+      KUBECONFIG: ${{ secrets.MANAGEMENT_CLUSTER_KUBECONFIG }}  # Set once globally
+
     steps:
     - name: Checkout Code
       uses: actions/checkout@v2
@@ -41,8 +44,12 @@ jobs:
             "access-id": "${{ secrets.AKEYLESS_ACCESS_ID }}",
             "access-key": "${{ secrets.AKEYLESS_API_ACCESS_KEY }}"
           }
-          ')
+        ')
         TOKEN=$(echo $RESPONSE | jq -r '.token')
+        if [ -z "$TOKEN" ]; then
+          echo "Failed to retrieve AKEYLESS_TOKEN" >&2
+          exit 1
+        fi
         echo "AKEYLESS_TOKEN=$TOKEN" >> $GITHUB_ENV
 
     - name: Install Argo CD CLI
@@ -51,83 +58,56 @@ jobs:
         sudo chmod +x /usr/local/bin/argocd
 
     - name: Login to Argo CD
-      run: argocd login ${{ secrets.ARGOCD_SERVER }} --grpc-web-root-path /argocd --username ${{ secrets.ARGOCD_USER }} --password ${{ secrets.ARGOCD_PASS }} --insecure
+      run: |
+        argocd login ${{ secrets.ARGOCD_SERVER }} \
+          --username ${{ secrets.ARGOCD_USER }} \
+          --password ${{ secrets.ARGOCD_PASS }} \
+          --insecure --grpc-web-root-path /argocd
 
     - name: Register Repository in Argo CD
-      run: argocd repo add ${{ github.event.inputs.repoURLforArgo }} --username ${{ github.actor }} --password ${{ secrets.MYGITHUB_TOKEN }}
+      run: |
+        argocd repo add ${{ github.event.inputs.repoURLforArgo }} \
+          --username ${{ github.actor }} --password ${{ secrets.MYGITHUB_TOKEN }}
 
     - name: Get DNS Ready
-      run: backstage/my-backstage-app/packages/backend/templates/vcluster/content/vcluster_scripts/setdns.sh ${{ github.event.inputs.clusterName }} ${{ secrets.CF_ZONE_ID }} ${{ secrets.CF_API_TOKEN }} ${{ secrets.TARGET_DOMAIN }} ${{ github.event.inputs.hostClusterType }}
-
-    - name: Install Civo CLI
-      if: ${{ github.event.inputs.hostClusterType }} == 'civo'
-      run: |
-        curl -sL https://civo.com/get | sh
-        civo apikey add default ${{ secrets.CIVO_TOKEN }}
-        civo region ls # to verify the region
-
-
-    - name: Deploy vcluster
-      run: |
-        helm repo add loft https://charts.loft.sh
-        helm repo update
-        if [ "${{ github.event.inputs.hostClusterType }}" = "eks" ]; then
-          DEST_SERVER="${{ github.event.inputs.hostEKS_URLforArgo }}"
-        elif [ "${{ github.event.inputs.hostClusterType }}" = "gke" ]; then
-          DEST_SERVER="${{ github.event.inputs.hostGKE_URLforArgo }}"
-        elif [ "${{ github.event.inputs.hostClusterType }}" = "aks" ]; then
-          DEST_SERVER="${{ github.event.inputs.hostAKS_URLforArgo }}"
-        elif [ "${{ github.event.inputs.hostClusterType }}" = "civo" ]; then
-          DEST_SERVER="${{ github.event.inputs.hostCIVO_URLforArgo }}"
-        fi
-    
-        DEST_SERVER="${{ github.event.inputs.hostCIVO_URLforArgo }}"
-
-        argocd app create ${{ github.event.inputs.clusterName }} \
-          --repo ${{ github.event.inputs.repoURLforArgo }} \
-          --path vcluster_scripts/vcluster-helm \
-          --helm-set vcluster.syncer.extraArgs[0]="--tls-san=${{ github.event.inputs.clusterName }}.socrateshlapolosa.org" \
-          --helm-set vcluster.syncer.extraArgs[1]="--out-kube-config-server=https://${{ github.event.inputs.clusterName }}.socrateshlapolosa.org" \
-          --dest-server https://kubernetes.default.svc \
-          --project default \
-          --sync-policy automated \
-          --sync-option CreateNamespace=true \
-          --upsert \
-          --grpc-web
-          sleep 30
+      run: backstage/my-backstage-app/packages/backend/templates/vcluster/content/vcluster_scripts/setdns.sh \
+        ${{ github.event.inputs.clusterName }}.socrateshlapolosa.org \
+        ${{ secrets.CF_ZONE_ID }} ${{ secrets.CF_API_TOKEN }} \
+        ${{ secrets.TARGET_DOMAIN }} ${{ github.event.inputs.hostClusterType }}
 
     - name: Install kubectl
       run: |
         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
         sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
-        
-    - name: Authenticate with Azure
-      uses: azure/login@v1
-      with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
-        
+
+    - name: Set KUBECONFIG for the selected host cluster
+      id: set-kubeconfig
+      run: |
+        set -e
+        SECRET_NAME="${{ github.event.inputs.clusterName }}-cluster"
+        kubectl get secret $SECRET_NAME -n ${{ github.event.inputs.clusterName }} \
+          -o jsonpath='{.data.kubeconfig}' | base64 --decode > kubeconfig.yaml
+        echo "KUBECONFIG=$(pwd)/kubeconfig.yaml" >> $GITHUB_ENV
+
+    - name: Create Argo CD application
+      run: |
+        set -e
+        API_SERVER=$(kubectl config view --kubeconfig=$(pwd)/kubeconfig.yaml -o jsonpath='{.clusters[0].cluster.server}')
+        argocd app create ${{ github.event.inputs.clusterName }} \
+          --repo ${{ github.event.inputs.repoURLforArgo }} \
+          --path vcluster_scripts/vcluster-helm \
+          --helm-set vcluster.syncer.extraArgs[0]="--tls-san=${{ github.event.inputs.clusterName }}.socrateshlapolosa.org" \
+          --helm-set vcluster.syncer.extraArgs[1]="--out-kube-config-server=${API_SERVER}" \
+          --dest-server ${API_SERVER} \
+          --project default \
+          --sync-policy automated \
+          --sync-option CreateNamespace=true \
+          --upsert \
+          --grpc-web
+        sleep 30
+
     - name: Save Kubeconfig in Akeyless
       run: |
-        if [ "${{ github.event.inputs.hostClusterType }}" = "eks" ]; then
-          echo "Configuring AWS EKS..."
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws eks update-kubeconfig --region us-east-1 --name ${{ github.event.inputs.hostEKSClusterName }}
-        elif [ "${{ github.event.inputs.hostClusterType }}" = "gke" ]; then
-          echo "Configuring GCP GKE..."
-          gcloud components install gke-gcloud-auth-plugin
-          gcloud container clusters get-credentials ${{ github.event.inputs.hostGKEClusterName }} --region us-east1 --project ${{ github.event.inputs.hostGKEprojectName }}
-        elif [ "${{ github.event.inputs.hostClusterType }}" = "aks" ]; then
-          echo "Configuring Azure AKS..."
-          az aks get-credentials --resource-group heathtest1 --name prod5 --overwrite-existing
-        elif [ "${{ github.event.inputs.hostClusterType }}" = "civo" ]; then
-          echo "Configuring Civo Kubernetes..."
-          civo kubernetes config ${{ github.event.inputs.hostCIVOClusterName }} --save
-          export KUBECONFIG=$HOME/.kube/config
-        fi
-        VCLUSTER_KUBECONFIG_BASE64=$(kubectl get secret vc-${{ github.event.inputs.clusterName }} -n ${{ github.event.inputs.clusterName }} --template={{.data.config}})
-        echo $VCLUSTER_KUBECONFIG_BASE64
-        $VCLUSTER_KUBECONFIG_BASE64 | base64 -d | echo
         curl --request POST \
         --url https://api.akeyless.io/update-secret-val \
         --header 'accept: application/json' \
@@ -139,6 +119,6 @@ jobs:
             "json": true,
             "token": "${{ env.AKEYLESS_TOKEN }}",
             "name": "vclusters/${{ github.event.inputs.clusterName }}/Kubeconfig",
-            "value": "'"$VCLUSTER_KUBECONFIG_BASE64"'"
+            "value": "'"$(cat kubeconfig.yaml)"'"
           }
-          '
+        '
