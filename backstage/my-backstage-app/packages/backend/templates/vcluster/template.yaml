@@ -9,7 +9,7 @@ spec:
   type: service
 
   parameters:
-    - title: Choose a Repo location
+    - title: Choose a Repo location where vcluster will be stored (should be subpath of host cluster)
       required:
         - repoUrl
       properties:
@@ -23,21 +23,18 @@ spec:
     - title: Basic vCluster Configuration
       required:
         - clusterName
-        # - k8sHostClusterURLforArgo
+        - hostClusterName
         - hostClusterType
       properties:
         clusterName:
           title: Cluster Name
           type: string
-          description: The name of your virtual cluster
+          description: The name of your virtual cluster typically production or dev or developer-name-cluster or feature-name-cluster
           ui:autofocus: true
-        # k8sHostClusterURLforArgo:
-        #   title: The host cluster to use
-        #   type: string
-        #   description: The host cluster to use
-        #   enum:
-        #     - https://5D795F1CE2F22C3B3BB93E19AA666DF4.gr7.us-east-1.eks.amazonaws.com
-        #     - https://34.139.219.170
+        hostClusterName:
+          title: The host cluster to use
+          type: string
+          description: The name of the host cluster to use, use kubectl get ns if not sure
         hostClusterType:
           title: The host cluster type
           type: string
@@ -56,7 +53,7 @@ spec:
         url: ./content
         values:
           clusterName: ${{ parameters.clusterName }}
-          k8sHostClusterURLforArgo: ${{ parameters.k8sHostClusterURLforArgo }}
+          k8sHostClusterURLforArgo: ${{ parameters.hostClusterName }}
     # This step publishes the contents of the working directory to GitHub.
     - id: publish
       name: Publish
@@ -75,6 +72,7 @@ spec:
         branchOrTagName: 'master'
         workflowInputs:
           clusterName: ${{ parameters.clusterName }}
+          hostClusterName: ${{ parameters.hostClusterName }}
           # k8sHostClusterURLforArgo: ${{ parameters.k8sHostClusterURLforArgo | string}}
           repoURLforArgo: ${{ steps['publish'].output.remoteUrl }}
           # hostEKSClusterName: eks-host-cluster
