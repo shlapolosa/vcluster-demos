@@ -80,7 +80,7 @@ jobs:
       uses: steebchen/kubectl@master
       with:
         config: ${{ secrets.MANAGEMENT_CLUSTER_KUBECONFIG  }}
-        command: config view --minify --context=heathhealth-aks
+        command: cluster-info
         
     - name: Set KUBECONFIG for the selected host cluster
       id: set-kubeconfig
