@@ -87,7 +87,7 @@ jobs:
       uses: steebchen/kubectl@master
       with:
         config: ${{ secrets.MANAGEMENT_CLUSTER_KUBECONFIG }}
-        command: get secret "${{ github.event.inputs.hostClusterName }}-cluster" -n ${{ github.event.inputs.hostClusterName }} -o jsonpath='{.data.kubeconfig}' | base64 --decode > kubeconfig.yaml
+        command: get secret "${{ github.event.inputs.hostClusterName }}-cluster" -n ${{ github.event.inputs.hostClusterName }} -o jsonpath='{.data.kubeconfig}' | base64 --d > kubeconfig.yaml
 
       
 
