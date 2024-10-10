@@ -3,6 +3,9 @@ name: Deploy a vCluster
 on:
   workflow_dispatch:
     inputs:
+      hostClusterName:
+        description: 'host Name'
+        required: true
       clusterName:
         description: 'vCluster Name'
         required: true
@@ -79,13 +82,14 @@ jobs:
       run: |
         curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
         sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+        kubectl cluster-info
 
     - name: Set KUBECONFIG for the selected host cluster
       id: set-kubeconfig
       run: |
         set -e
-        SECRET_NAME="${{ github.event.inputs.clusterName }}-cluster"
-        kubectl get secret $SECRET_NAME -n ${{ github.event.inputs.clusterName }} \
+        SECRET_NAME="${{ github.event.inputs.hostClusterName }}-cluster"
+        kubectl get secret $SECRET_NAME -n ${{ github.event.inputs.hostClusterName }} \
           -o jsonpath='{.data.kubeconfig}' | base64 --decode > kubeconfig.yaml
         echo "KUBECONFIG=$(pwd)/kubeconfig.yaml" >> $GITHUB_ENV
 
@@ -94,7 +98,7 @@ jobs:
         # Temporarily remove set -e and check output
         API_SERVER=$(kubectl config view --kubeconfig=$(pwd)/kubeconfig.yaml -o jsonpath='{.clusters[0].cluster.server}')
         echo "API_SERVER: $API_SERVER"
-        argocd app create testing \
+        argocd app create test \
           --repo https://github.com/shlapolosa/afullcluster \
           --path vcluster_scripts/vcluster-helm \
           --helm-set vcluster.syncer.extraArgs[0]="--tls-san=testing.socrateshlapolosa.org" \
