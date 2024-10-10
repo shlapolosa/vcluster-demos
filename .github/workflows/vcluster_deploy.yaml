@@ -81,8 +81,8 @@ jobs:
       env:
         KUBE_CONFIG_DATA: ${{ secrets.MANAGEMENT_CLUSTER_KUBECONFIG  }}
       with:
-        args: cluster-info
-
+        args: config view --minify --context=heathhealth-aks
+        
     - name: Set KUBECONFIG for the selected host cluster
       id: set-kubeconfig
       run: |
