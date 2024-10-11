@@ -125,7 +125,7 @@ jobs:
     - name: Save Kubeconfig in Akeyless
       run: |
         curl --request POST \
-        --url https://api.akeyless.io/update-secret-val \
+        --url https://api.akeyless.io/create-secret \
         --header 'accept: application/json' \
         --header 'content-type: application/json' \
         --data '
